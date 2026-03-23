@@ -1,14 +1,15 @@
 # 306-Project
 Statistical Inference for a Linear Regression Model of California Housing Prices
 
-the dataset has 20,640 rows and 10 variables
+The dataset has 20,640 rows and 10 variables
 only total_bedrooms has missing values
 that missingness is 207 rows, about 1%
 ocean_proximity is very unbalanced, with ISLAND = 5 rows only
 median_house_value is capped at 500001, and that happens 965 times = 4.68%
 INLAND clearly has much lower house values than the coastal categories
 
-<head>简单interpretation</head>
+<head>simple interpretation</head>
+
 We began by examining the structure and quality of the data. The dataset contains 20,640 census block groups and 10 variables. Most variables are complete, with missing values appearing only in total_bedrooms. Specifically, 207 observations, or about 1% of the sample, are missing this variable. This suggests that missingness is limited, though it will still need to be addressed before fitting regression models.
 
 We also converted ocean_proximity to a categorical variable and examined its distribution. The largest categories are <1H OCEAN and INLAND, while ISLAND contains only 5 observations, so results for that category should be interpreted cautiously.
