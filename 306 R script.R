@@ -117,6 +117,7 @@ model2 <- lm(log(median_house_value) ~ median_income +
 summary(model2)
 vif(model2)
 
+<<<<<<< HEAD
 # Model 1: core variables only
 m1 <- lm(
   log(median_house_value) ~ median_income + ocean_proximity,
@@ -253,3 +254,5 @@ cook <- cooks.distance(m4)
 infl_idx <- which(cook > 1)
 infl_idx
 length(infl_idx)
+=======
+>>>>>>> eede0e4715a82d6dae99295e6fbaa486a62e9aaa
