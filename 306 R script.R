@@ -115,7 +115,6 @@ model2 <- lm(log(median_house_value) ~ median_income +
              data = housing)
 
 summary(model2)
-vif(model2)
 
 # Model 1: core variables only
 m1 <- lm(
@@ -157,50 +156,55 @@ summary(m3)
 summary(m4)
 
 # Course-style Cp function
-calc_cp <- function(model, full_model) {
-  sse_p <- sum(resid(model)^2)
-  mse_full <- summary(full_model)$sigma^2
-  n <- nobs(full_model)
-  k <- length(coef(model))   # includes intercept
-  cp <- sse_p / mse_full - (n - 2 * k)
+
+# Residual mean square error from the full model
+sigma2_full <- summary(m4)$sigma^2
+
+# Function to compute Mallows' Cp
+mallows_cp <- function(model, sigma2_full, n) {
+  rss <- sum(residuals(model)^2)
+  p <- length(coef(model))   # includes intercept
+  cp <- rss / sigma2_full - (n - 2 * p)
   return(cp)
 }
 
-model_table <- data.frame(
+# Sample size
+n <- nrow(housing)
+
+# Compute Cp for each model
+cp_m1 <- mallows_cp(m1, sigma2_full, n)
+cp_m2 <- mallows_cp(m2, sigma2_full, n)
+cp_m3 <- mallows_cp(m3, sigma2_full, n)
+cp_m4 <- mallows_cp(m4, sigma2_full, n)
+
+# Put results in a table
+cp_results <- data.frame(
   Model = c("m1", "m2", "m3", "m4"),
-  k = c(length(coef(m1)),
-        length(coef(m2)),
-        length(coef(m3)),
-        length(coef(m4))),
-  Adjusted_R_squared = c(summary(m1)$adj.r.squared,
-                         summary(m2)$adj.r.squared,
-                         summary(m3)$adj.r.squared,
-                         summary(m4)$adj.r.squared),
-  Mallows_Cp = c(calc_cp(m1, m4),
-                 calc_cp(m2, m4),
-                 calc_cp(m3, m4),
-                 calc_cp(m4, m4))
+  Parameters_p = c(length(coef(m1)), length(coef(m2)),
+                   length(coef(m3)), length(coef(m4))),
+  Mallows_Cp = c(cp_m1, cp_m2, cp_m3, cp_m4)
 )
 
-model_table 
+cp_results
 
-# VIF 
+# VIF
 
 reg_income <- lm(
   median_income ~ housing_median_age +
     log_rooms_per_household +
     bedrooms_per_room +
-    log_population_per_household,
+    log_population_per_household +
+    latitude + longitude,
   data = housing
 )
 VIF_income <- 1 / (1 - summary(reg_income)$r.squared)
-VIF_income
 
 reg_age <- lm(
   housing_median_age ~ median_income +
     log_rooms_per_household +
     bedrooms_per_room +
-    log_population_per_household,
+    log_population_per_household +
+    latitude + longitude,
   data = housing
 )
 VIF_age <- 1 / (1 - summary(reg_age)$r.squared)
@@ -209,7 +213,8 @@ reg_rooms <- lm(
   log_rooms_per_household ~ median_income +
     housing_median_age +
     bedrooms_per_room +
-    log_population_per_household,
+    log_population_per_household +
+    latitude + longitude,
   data = housing
 )
 VIF_rooms <- 1 / (1 - summary(reg_rooms)$r.squared)
@@ -218,7 +223,8 @@ reg_bed <- lm(
   bedrooms_per_room ~ median_income +
     housing_median_age +
     log_rooms_per_household +
-    log_population_per_household,
+    log_population_per_household +
+    latitude + longitude,
   data = housing
 )
 VIF_bed <- 1 / (1 - summary(reg_bed)$r.squared)
@@ -227,16 +233,39 @@ reg_pop <- lm(
   log_population_per_household ~ median_income +
     housing_median_age +
     log_rooms_per_household +
-    bedrooms_per_room,
+    bedrooms_per_room +
+    latitude + longitude,
   data = housing
 )
 VIF_pop <- 1 / (1 - summary(reg_pop)$r.squared)
 
+reg_lat <- lm(
+  latitude ~ median_income +
+    housing_median_age +
+    log_rooms_per_household +
+    bedrooms_per_room +
+    log_population_per_household +
+    longitude,
+  data = housing
+)
+VIF_lat <- 1 / (1 - summary(reg_lat)$r.squared)
+
+reg_long <- lm(
+  longitude ~ median_income +
+    housing_median_age +
+    log_rooms_per_household +
+    bedrooms_per_room +
+    log_population_per_household +
+    latitude,
+  data = housing
+)
+VIF_long <- 1 / (1 - summary(reg_long)$r.squared)
+
 vif_table <- data.frame(
   Variable = c("median_income", "housing_median_age",
                "log_rooms_per_household", "bedrooms_per_room",
-               "log_population_per_household"),
-  VIF = c(VIF_income, VIF_age, VIF_rooms, VIF_bed, VIF_pop)
+               "log_population_per_household", "latitude", "longitude"),
+  VIF = c(VIF_income, VIF_age, VIF_rooms, VIF_bed, VIF_pop, VIF_lat, VIF_long)
 )
 
 vif_table
